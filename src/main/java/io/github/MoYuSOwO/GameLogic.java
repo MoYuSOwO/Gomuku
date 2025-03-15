@@ -14,6 +14,11 @@ public class GameLogic {
         WHITEWIN,
         DRAW;
     }
+    public enum MoveStatus {
+        BLACKMOVED,
+        WHITEMOVED,
+        ERROR;
+    }
     private final int boardRow, boardCol;
     private final Pieces[][] board;
     private Pieces currentPlayer;
@@ -39,20 +44,19 @@ public class GameLogic {
         lastMoveRow = -1;
         lastMoveCol = -1;
     }
-    public boolean move(int row, int col) {
+    public MoveStatus move(int row, int col) {
         if (row < 0 || row >= this.boardRow || col < 0 || col >= this.boardCol) {
-            return false;
+            return MoveStatus.ERROR;
         }
-        if (this.board[row][col] == Pieces.EMPTY) {
+        else if (this.board[row][col] == Pieces.EMPTY) {
             this.board[row][col] = this.currentPlayer;
             this.lastMoveRow = row;
             this.lastMoveCol = col;
             this.changePlayer();
-            return true;
+            if (this.currentPlayer == Pieces.BLACK) return MoveStatus.WHITEMOVED;
+            else if (this.currentPlayer == Pieces.WHITE) return MoveStatus.BLACKMOVED;
         }
-        else {
-            return false;
-        }
+        return MoveStatus.ERROR;
     }
     public GameStatus checkResult() {
         if (this.lastMoveRow == -1 && this.lastMoveCol == -1) {
@@ -73,14 +77,8 @@ public class GameLogic {
             return GameStatus.PLAYING;
         }
     }
-    public int getRow() {
-        return this.boardRow;
-    }
-    public int getCol() {
-        return this.boardCol;
-    }
-    public Pieces[][] getBoard() {
-        return Arrays.stream(board).map(Pieces[]::clone).toArray(Pieces[][]::new);
+    public Pieces getCurrentPlayer() {
+        return this.currentPlayer;
     }
     private boolean isDraw() {
         for (int i = 0; i < this.boardRow; i++) {
